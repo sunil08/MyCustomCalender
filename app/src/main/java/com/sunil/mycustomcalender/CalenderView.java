@@ -76,6 +76,7 @@ public class CalenderView extends LinearLayout
                         monthcount7=0, monthcount8=0, monthcount9=0, monthcount10=0, monthcount11=0;
 
     public static int l = -1;
+    public static int myglobaldate = 0;
 
     // month-season association (northern hemisphere, sorry australia :)
     int[] monthSeason = new int[] {2, 2, 3, 3, 3, 0, 0, 0, 1, 1, 1, 2};
@@ -199,9 +200,13 @@ public class CalenderView extends LinearLayout
                     cell1.setBackgroundResource(0);
                 cell1 = cell;
 
-                cell.setBackgroundResource(R.drawable.circular_shape);
+                //Log.e("cell enablity ",""+cell.isEnabled());
 
-                eventHandler.onDayLongPress((Date) parent.getItemAtPosition(position));
+                if(cell.isEnabled()) {
+                    cell.setBackgroundResource(R.drawable.circular_shape);
+
+                    eventHandler.onDayLongPress((Date) parent.getItemAtPosition(position));
+                }
                 //return true;
 
             }
@@ -213,13 +218,13 @@ public class CalenderView extends LinearLayout
      */
     public void updateCalendar()
     {
-        updateCalendar(null);
+        updateCalendar(null,myglobaldate);
     }
 
     /**
      * Display dates correctly in grid
      */
-    public void updateCalendar(HashSet<Date> events)
+    public void updateCalendar(HashSet<Date> events, int globaldate)
     {
         monthcount0 = 0;
         monthcount1 = 0;
@@ -233,6 +238,8 @@ public class CalenderView extends LinearLayout
         monthcount9 = 0;
         monthcount10 = 0;
         monthcount11 = 0;
+
+        myglobaldate = globaldate;
 
         monthnum1.clear();
 
@@ -251,10 +258,10 @@ public class CalenderView extends LinearLayout
         // fill cells
         while (cells.size() < DAYS_COUNT)
         {
-            Log.e("calender time",""+calendar.getTime());
+            //Log.e("calender time",""+calendar.getTime());
             cells.add(calendar.getTime());
             monthnum.add(calendar.get(Calendar.MONTH));
-            Log.e("calender time new", "" + calendar.get(Calendar.MONTH));
+            //Log.e("calender time new", "" + calendar.get(Calendar.MONTH));
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
@@ -277,7 +284,7 @@ public class CalenderView extends LinearLayout
         Log.e("monthcount11 ", "" + monthcount11);*/
 
         // update grid
-        grid.setAdapter(new CalendarAdapter(getContext(), cells, events));
+        grid.setAdapter(new CalendarAdapter(getContext(), cells, events,myglobaldate));
 
         // update title
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
@@ -364,11 +371,13 @@ public class CalenderView extends LinearLayout
 
         // for view inflation
         private LayoutInflater inflater;
+        private int newglobaldate;
 
-        public CalendarAdapter(Context context, ArrayList<Date> days, HashSet<Date> eventDays)
+        public CalendarAdapter(Context context, ArrayList<Date> days, HashSet<Date> eventDays, int myglobaldate_new)
         {
             super(context, R.layout.control_calendar_day, days);
             this.eventDays = eventDays;
+            this.newglobaldate = myglobaldate_new;
             inflater = LayoutInflater.from(context);
         }
 
@@ -380,11 +389,11 @@ public class CalenderView extends LinearLayout
             Date date = getItem(position);
             calendar.setTime(date);
             int day = calendar.get(Calendar.DATE);
-            Log.e("my day is ",""+day);
+            //Log.e("my day is ",""+day);
             int month = calendar.get(Calendar.MONTH);
-            Log.e("my month is ",""+month);
+            //Log.e("my month is ",""+month);
             int year = calendar.get(Calendar.YEAR);
-            Log.e("my year is ",""+year);
+            //Log.e("my year is ",""+year);
 
             // today
             Date today = new Date();
@@ -404,7 +413,7 @@ public class CalenderView extends LinearLayout
                             eventDate.getYear() == year)
                     {
                         // mark this day for event
-                        // view.setBackgroundResource(R.drawable.circular_shape);               // commented by sunil me
+                         view.setBackgroundResource(R.drawable.circular_shape);               // commented by sunil me
                         break;
                     }
                 }
@@ -414,24 +423,44 @@ public class CalenderView extends LinearLayout
             ((TextView)view).setTypeface(null, Typeface.NORMAL);
             ((TextView)view).setTextColor(Color.BLACK);
 
-            Log.e("Month is ", "" + month);
-            Log.e("today.getMonth() is ", "" + today.getMonth());
-            Log.e("month num 1"," "+monthnum1);
-
+            //Log.e("Month is ", "" + month);
+            //Log.e("today.getMonth() is ", "" + today.getMonth());
+            //Log.e("today.getDate() is ", "" + today.getDate());
+            //Log.e("month num 1"," "+monthnum1);
 
             if(monthnum1.size()==3) {
+
+                if(today.getMonth() == monthnum1.get(1))        // disable and enable the previous button
+                {
+                    btnPrev.setVisibility(GONE);
+                }
+                if(today.getMonth() != monthnum1.get(1))        // disable and enable the previous button
+                {
+                    btnPrev.setVisibility(VISIBLE);
+                }
+                if(today.getMonth() == month && newglobaldate == day)
+                {
+                    TextView textView =((TextView) view);
+                    textView.setTextColor(Color.parseColor("#FE2EC8"));
+                }
+
                 if (month == monthnum1.get(0)) {
-                    ((TextView) view).setTextColor(getResources().getColor(R.color.greyed_out));
+                    TextView textView =((TextView) view);
+                    textView.setEnabled(false);
+                    textView.setTextColor(getResources().getColor(R.color.greyed_out));
                 }
                 else if (month == monthnum1.get(2)) {
-                    ((TextView) view).setTextColor(getResources().getColor(R.color.greyed_out));
+                    TextView textView =((TextView) view);
+                    textView.setEnabled(false);
+                    textView.setTextColor(getResources().getColor(R.color.greyed_out));
                 }
             }
             else
             {
-/*                if (date.getMonth() == monthnum1.get(0)) {
-                    ((TextView) view).setTextColor(getResources().getColor(R.color.greyed_out));
-                }*/
+                if(today.getMonth() == monthnum1.get(0))
+                {
+                    btnPrev.setVisibility(GONE);
+                }
                 if (month == monthnum1.get(1)) {
                     ((TextView) view).setTextColor(getResources().getColor(R.color.greyed_out));
                 }

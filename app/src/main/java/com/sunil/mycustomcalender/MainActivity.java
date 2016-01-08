@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,11 +14,15 @@ import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity {
 
+    Calendar globalcalendar;
+    Integer globaldate;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,11 +39,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        globalcalendar = new GregorianCalendar();
+        globaldate = globalcalendar.get(Calendar.DAY_OF_MONTH);
+
         HashSet<Date> events = new HashSet<>();
         events.add(new Date());
 
         CalenderView cv = ((CalenderView)findViewById(R.id.calendar_view));
-        cv.updateCalendar(events);
+        cv.updateCalendar(events,globaldate);
 
         // assign event handler
         cv.setEventHandler(new CalenderView.EventHandler() {
